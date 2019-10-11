@@ -3,49 +3,35 @@ var vehicleDetail = require('../Models/vehicleDetailsModel');
 
 module.exports=function(app){
 
+    
+    app.use(bodyParser.urlencoded({extended:true}));
     app.use(bodyParser.json());
-    app.use(bodyParser.urlencoded({extended:false}));
-
-    app.get('/api/getAllVehicleDetails',function(req,res){
-        vehicleDetail.find({},function(err,results){
+    
+    app.get('/api/getAllVehicleDetails', async function(req,res){
+        
+         await vehicleDetail.find({},function(err,results){
             if (err) throw err;
             res.send(results);
         })
     });
 
-    app.get('/api/getVehicleDetailsName/:vname', function(req,res){
-        vehicleDetail.find({vehicleName:req.params.vname}, function(err,results){
+    app.get('/api/getVehicleDetailsName', function(req,res){
+        console.log('in api '+req.query.vname);
+        vehicleDetail.find({vehicleName:req.body.vname}, function(err,results){
             if (err) throw err;
             res.send(results);
         });
     });
 
-    app.post('/api/addAndUpdateVehicleDetails',function(req,res){
+    app.post('/api/addAndUpdateVehicleDetails',async function(req,res){
         if(req.body.id){
-            vehicleDetail.findByIdAndUpdate(req.body.id,{
-                vehicleName:req.body.vehicleName,
-                vehicleType:req.body.vehicleType,
-                fuelType:req.body.fuelType,
-                year:req.body.year,
-                CC:req.body.CC,
-                cylinders:req.body.cylinders,
-                transmission:req.body.transmission,
-                brakes:req.body.brakes},function(err,results){
+            await vehicleDetail.findByIdAndUpdate(req.body.id,{...req.body},function(err,results){
                     if(err) throw err;
                     res.send('Success');
             })
         }
         else{
-            var addNewVehicleDetail = vehicleDetail({
-                vehicleName:req.body.vehicleName,
-                vehicleType:req.body.vehicleType,
-                fuelType:req.body.fuelType,
-                year:req.body.year,
-                CC:req.body.CC,
-                cylinders:req.body.cylinders,
-                transmission:req.body.transmission,
-                brakes:req.body.brakes
-            });
+            var addNewVehicleDetail = vehicleDetail({...req.body});
             addNewVehicleDetail.save(function(err){
                 if (err) throw err;
                 res.send('Success');
